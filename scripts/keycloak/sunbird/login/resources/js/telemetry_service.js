@@ -2481,9 +2481,9 @@ if (window.location.origin.indexOf("staging.sunbirded.org") >= 0) {
   pdataId = "staging.diksha.portal";
 } else if (window.location.origin.indexOf("dev.sunbirded.org") >= 0) {
   pdataId = "dev.sunbird.portal";
-  tenantSlug = "sunbird";
+  tenantSlug = "fmps";
 } else {
-  tenantSlug = "sunbird";
+  tenantSlug = "fmps";
   pdataId = "dev.sunbird.portal";
 }
 
@@ -2530,7 +2530,7 @@ if(client_id.toLowerCase() === 'android'){
         request: {
           filters: {
             isTenant: true,
-            slug: id || 'sunbird'
+            slug: id || 'fmps'
           }
         }
       }),
