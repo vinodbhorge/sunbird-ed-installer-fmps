@@ -13,6 +13,13 @@
                     <a href="#" onclick="showContactModal(event)" class="nav-link">Contact Us</a>
                 </nav>
             </div>
+            <div id="browserWarning" style="
+                display: block; background-color: #fff8e1; color: #6c4a01;
+                padding: 0.875rem 1.25rem; border-radius: 0.625rem; margin: 0.5rem;
+                max-width: 45rem; text-align: center; font-size: 0.9375rem; font-weight: 500;
+                border: 0.0625rem solid #ffe0a3; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.06);
+                font-family: 'Segoe UI', Roboto, sans-serif;">⚠️ For the best experience, please use <strong>Google Chrome</strong> or <strong>Safari</strong>
+            </div>
             <div class="ui header centered mb-8">
                 <img onerror="" alt="">
                 <h2 id="signIn" class="signInHead mt-8 mb-8">${msg("loginDiksha")}</h2>
@@ -232,6 +239,8 @@
 </#if>
 </@layout.registrationLayout>
 
+<script src="https://unpkg.com/bowser@2.11.0/es5.js"></script>
+
 <script>
 // Get the modals
 var aboutModal = document.getElementById("aboutUsModal");
@@ -320,4 +329,16 @@ function submitContactForm(e) {
     // Hide message after 5 seconds
     setTimeout(() => formMessage.classList.add("hide"), 5000);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const browser = bowser.getParser(window.navigator.userAgent);
+    const browserName = browser.getBrowserName();
+    const browserWarning = document.getElementById('browserWarning');
+
+    if (browserName !== 'Safari' && browserName !== 'Chrome') {
+        browserWarning.style.display = 'block';
+    } else {
+        browserWarning.style.display = 'none';
+    }
+});
 </script>
