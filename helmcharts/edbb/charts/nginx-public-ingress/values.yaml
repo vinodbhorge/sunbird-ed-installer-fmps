@@ -132,6 +132,11 @@ initContainers:
     command: ["/bin/sh", "-c"]
     args:
     - "timeout 300 sh -c 'until nc -z player 3000; do echo waiting for player; sleep 10; done'"
+  - name: wait-for-superset
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args:
+    - "timeout 300 sh -c 'until nc -z superset.superset.svc.cluster.local 8088; do echo waiting for superset; sleep 10; done'"
 
 sidecars: {}
   # - name: log-reader # Sidecar container
