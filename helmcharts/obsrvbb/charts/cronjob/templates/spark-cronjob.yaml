@@ -339,6 +339,29 @@ spec:
           restartPolicy: OnFailure
           serviceAccountName: spark-cronjob-sa
 ---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: run-user-masterdata-indexer
+spec:
+  schedule: "30 9 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: user-indexer-cron-job
+            image: sunbirded.azurecr.io/kubectl:1.28.4
+            command:
+            - /bin/sh
+            - -c
+            - |
+              SPARK_POD=spark-master-0
+              kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh user-master-data-indexer"
+          restartPolicy: OnFailure
+          serviceAccountName: spark-cronjob-sa
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -363,6 +386,30 @@ spec:
 
 
 ---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: run-content-indexer
+spec:
+  schedule: "30 9 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: content-indexer-cron-job
+            image: sunbirded.azurecr.io/kubectl:1.28.4
+            command:
+            - /bin/sh
+            - -c
+            - |
+              SPARK_POD=spark-master-0
+              kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh content-data-indexer"
+          restartPolicy: OnFailure
+          serviceAccountName: spark-cronjob-sa
+---
+
 apiVersion: batch/v1
 kind: CronJob
 metadata:
