@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/player
-  tag: "v5.128.7"
+  tag: "v5.128.8"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
