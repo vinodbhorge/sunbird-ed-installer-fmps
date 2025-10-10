@@ -12,3 +12,5 @@ druid-operator:
   enabled: true
 druid-raw-cluster:
   enabled: true
+superset:
+  enabled: false
