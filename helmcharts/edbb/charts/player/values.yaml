@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/player
-  tag: "v5.165"
+  tag: "v5.158"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -122,6 +122,7 @@ sunbird_google_android_keycloak_client_id: google-auth-android
 sunbird_google_android_keycloak_secret: google_android_keycloak
 sunbird_google_desktop_keycloak_client_id: google-auth-desktop
 sunbird_android_keycloak_client_id: ""
+quiz_body_refresh_ttl: "1"
 global:
   azure_private_container_name: ""
   azure_storage_account_name: sunbird

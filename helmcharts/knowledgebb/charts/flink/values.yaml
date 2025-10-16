@@ -401,6 +401,7 @@ flink_jobs:
       include file("/data/flink/conf/base-config.conf")
       job {
         env = "{{ .Values.global.env }}"
+        timezone = "Asia/Kolkata"
       }
 
       kafka {
@@ -418,6 +419,7 @@ flink_jobs:
         link_dialcode.parallelism = 1
         batch_create.parallelism = 1
         dialcode_context_updater.parallelism = 1
+        activity_batch_create.parallelism = 1
       }
 
       lms-cassandra {
@@ -440,6 +442,12 @@ flink_jobs:
 
       dialcode {
         linkable.primaryCategory = ["Course"]
+        enabled = false
+      }
+
+      activity {
+        batch.creation.enabled = true
+        batch.creation.primaryCategories = ["Competency Framework"]
       }
 
       cloudstorage.metadata.replace_absolute_path=true
@@ -475,7 +483,7 @@ flink_jobs:
     job_classname: org.sunbird.job.postpublish.task.PostPublishProcessorStreamTask
 
   dialcode-context-updater:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       job {
@@ -532,7 +540,7 @@ flink_jobs:
 
 
   qrcode-image-generator:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       job {
@@ -602,7 +610,7 @@ flink_jobs:
     job_classname: org.sunbird.job.qrimagegenerator.task.QRCodeImageGeneratorTask
 
   video-stream-generator:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       job {

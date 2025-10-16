@@ -97,7 +97,7 @@ variable "gke_node_pool_scaling_config" {
   type        = map(number)
   description = "EKS node group auto scaling configuration."
   default     = {
-    desired_size = 3
+    desired_size = 2
     min_size = 3
     max_size = 3
   }

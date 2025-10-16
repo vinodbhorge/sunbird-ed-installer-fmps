@@ -28,6 +28,7 @@ spec:
         command: ['bash', '-c']
         args:
         - |
+          apt-get update && apt-get install -y wget
           cd /tmp/
           export sunbird_cassandra_host={{.Values.global.cassandra.host}}
           export sunbird_cassandra_port={{.Values.global.cassandra.port}}

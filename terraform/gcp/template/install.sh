@@ -108,6 +108,7 @@ function install_component() {
       fi
     helm upgrade --install "$component" "$component" --namespace sunbird -f "$component/values.yaml" \
         $ed_values_flag \
+        -f "images.yaml" \
         -f "global-resources.yaml" \
         -f "../terraform/gcp/$environment/global-values.yaml" \
         -f "../terraform/gcp/$environment/monitoring-values.yaml" \

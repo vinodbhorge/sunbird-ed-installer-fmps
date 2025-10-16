@@ -9264,3 +9264,129 @@ kong_apis:
     config.limit_by: credential
   - name: request-size-limiting
     config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: batchList
+  uris: "{{ .Values.activity_prefix }}/v1/batch/list"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/batch/list"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: createBatchV1
+  uris: "{{ .Values.activity_prefix }}/v1/batch/create"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/batch/create"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: updateBatchV1
+  uris: "{{ .Values.activity_prefix }}/v1/batch/update"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/batch/update"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: activityEnroll
+  uris: "{{ .Values.activity_prefix }}/v1/user/enroll"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/activity/enroll"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: activityUnenroll
+  uris: "{{ .Values.activity_prefix }}/v1/user/unenroll"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/activity/user/unenroll"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: activityUserEnrollList
+  uris: "{{ .Values.activity_prefix }}/v1/user/enrollment/list"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/user/activity/enrollment/list"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
+
+- name: activityEnrollList
+  uris: "{{ .Values.activity_prefix }}/v1/enrollment/list"
+  upstream_url: "{{ .Values.lms_service_url }}/v1/activity/enrollment/list"
+  strip_uri: true
+  plugins:
+  - name: jwt
+  - name: cors
+  - {{ .Values.statsd_pulgin | toYaml | nindent 4 | trim }}
+  - name: acl
+    config.whitelist:
+    - portalLoggedin
+  - name: rate-limiting
+    config.policy: local
+    config.hour: "{{ .Values.medium_rate_limit_per_hour }}"
+    config.limit_by: credential
+  - name: request-size-limiting
+    config.allowed_payload_size: "{{ .Values.small_request_size_limit }}"
