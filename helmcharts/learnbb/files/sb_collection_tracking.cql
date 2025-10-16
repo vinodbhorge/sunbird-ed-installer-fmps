@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS sb_collection_tracking.user_enrolments (
     status int,
     statusmap map<text, int>,
     PRIMARY KEY (userid, activityid, activitytype, batchid)
-) WITH CLUSTERING ORDER BY (activityid ASC, activitytype ASC, batchid ASC)
+) WITH CLUSTERING ORDER BY (activityid ASC, activitytype ASC, batchid ASC);
 
 -- User enrolments table view
 CREATE MATERIALIZED VIEW sb_collection_tracking.enrollments_by_batch AS
@@ -47,7 +47,7 @@ CREATE MATERIALIZED VIEW sb_collection_tracking.enrollments_by_batch AS
     FROM sb_collection_tracking.user_enrolments
     WHERE activityid IS NOT NULL AND activitytype IS NOT NULL AND batchid IS NOT NULL AND userid IS NOT NULL
     PRIMARY KEY ((activityid, activitytype, batchid), userid)
-    WITH CLUSTERING ORDER BY (userid ASC)
+    WITH CLUSTERING ORDER BY (userid ASC);
 
 -- Insert values into role and role group.
 

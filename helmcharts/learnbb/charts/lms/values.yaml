@@ -212,6 +212,7 @@ sunbird_cloud_service_provider: "azure"
 isMultiDCEnabled: "false"
 sunbird_dial_service_base_url: "http://dial-service:9000"
 sunbird_dial_service_search_url: "/dialcode/v3/search"
+sb_collection_tracking_keyspace: sb_collection_tracking
 
 opa_enabled: false
 
