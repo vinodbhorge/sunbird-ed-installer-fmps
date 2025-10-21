@@ -166,7 +166,7 @@ images:
 
   content: &content
     repository: "asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/content"
-    tag: "fmps-v1.0.5"
+    tag: "fmps-1.0.0-auto-pub-25f27732"
 
   dial: &dial
     repository: "sunbirded.azurecr.io/sunbird-dial-service"
@@ -472,7 +472,7 @@ global:
   learnflink:
     registry: "asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev"
     repository: "data-pipeline"
-    tag: "release-7.0.0_CFB-V69"
+    tag: "release-7.0.0_CFB-V73"
 
   inquiryflink:
     registry: "sunbirded.azurecr.io"
