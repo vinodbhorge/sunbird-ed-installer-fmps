@@ -1041,9 +1041,12 @@ flink_jobs:
       }
       redis {
         database {
-          relationCache.id = 10
+          relationCache.id = 6
         }
       }
+
+      enable.parent.progress.update = true
+
       dedup-redis {
         host = "{{ .Values.global.redis.host }}"
         port = 6379
