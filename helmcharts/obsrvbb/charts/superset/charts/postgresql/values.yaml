@@ -96,8 +96,8 @@ diagnosticMode:
 ## @param image.debug Specify if debug values should be set
 ##
 image:
-  registry: docker.io
-  repository: bitnami/postgresql
+  registry: sunbirded.azurecr.io
+  repository: postgresql
   tag: 16.1.0-debian-11-r25
   digest: ""
   ## Specify a imagePullPolicy
@@ -1328,8 +1328,8 @@ volumePermissions:
   ## @param volumePermissions.image.pullSecrets Init container volume-permissions image pull secrets
   ##
   image:
-    registry: docker.io
-    repository: bitnami/os-shell
+    registry: sunbirded.azurecr.io
+    repository: os-shell
     tag: 11-debian-11-r95
     digest: ""
     pullPolicy: IfNotPresent

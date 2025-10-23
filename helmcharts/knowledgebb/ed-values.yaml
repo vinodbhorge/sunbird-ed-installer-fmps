@@ -6,3 +6,5 @@ kafka:
   enabled: false
 redis:
   enabled: false
+dial:
+  enabled: false

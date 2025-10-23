@@ -45,6 +45,10 @@ get_report_job_model_name(){
 		;;
 		"collection-summary-report-v2") echo  'org.sunbird.analytics.job.report.UserSummaryReport'
 		;;
+		"content-data-indexer") echo  'org.sunbird.analytics.job.report.ContentDataIndexerJob'
+		;;
+		"user-master-data-indexer") echo  'org.sunbird.analytics.job.report.UserMasterDataIndexerV2'
+        ;;
 		"assessment-score-metric-correction") echo 'org.sunbird.analytics.audit.AssessmentScoreCorrectionJob'
 		;;
 		"course-batch-status-updater") echo 'org.sunbird.analytics.audit.CourseBatchStatusUpdaterJob'

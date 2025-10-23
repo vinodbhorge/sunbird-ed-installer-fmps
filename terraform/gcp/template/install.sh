@@ -108,6 +108,7 @@ function install_component() {
       fi
     helm upgrade --install "$component" "$component" --namespace sunbird -f "$component/values.yaml" \
         $ed_values_flag \
+        -f "images.yaml" \
         -f "global-resources.yaml" \
         -f "../terraform/gcp/$environment/global-values.yaml" \
         -f "../terraform/gcp/$environment/monitoring-values.yaml" \
@@ -343,6 +344,93 @@ function data_products_migration() {
     kubectl rollout status statefulset -n sunbird spark-master
 }
 
+function request_submit_config() {
+    local env_file="env.json"
+    local values_file="values.yaml"
+    local target_dir="../../../helmcharts/obsrvbb/charts/dataproducts"
+    if [ ! -f "$env_file" ]; then
+        echo "Error: $env_file not found!"
+        return 1
+    fi
+    # Get absolute path of env.json from current directory
+    local env_file_abs_path="$(pwd)/$env_file"
+    # Check if target directory exists
+    if [ ! -d "$target_dir" ]; then
+        echo "Error: Directory $target_dir not found!"
+        return 1
+    fi
+    # Change to the target directory
+    cd "$target_dir" || {
+        echo "Error: Failed to change to directory $target_dir"
+        return 1
+    }
+    if [ ! -f "$values_file" ]; then
+        echo "Error: $values_file not found in $(pwd)!"
+        cd - > /dev/null
+        return 1
+    fi
+    local username
+    local password
+    username=$(yq -r '.username' "$values_file")
+    password=$(yq -r '.password' "$values_file")
+
+    if [ -z "$username" ] || [ -z "$password" ] ; then
+        return 1
+    fi
+    local host
+    local apikey
+    host=$(jq -r '.values[] | select(.key=="host") | .value' "$env_file_abs_path")
+    apikey=$(jq -r '.values[] | select(.key=="apikey") | .value' "$env_file_abs_path")
+    
+    if [[ -z "$host" || -z "$apikey" || "$host" == "null" || "$apikey" == "null" ]]; then
+        echo "Error: host or apikey missing in $env_file"
+        cd - > /dev/null
+        return 1
+    fi
+    # Update baseUrl and api_key in values.yaml using # as delimiter to avoid path conflicts
+    sed -i '' "s#baseUrl: \".*\"#baseUrl: \"$host\"#g" "$values_file"
+    sed -i '' "s#api_key: \".*\"#api_key: \"$apikey\"#g" "$values_file"
+    echo "Successfully updated $values_file"
+    client_secret=$(kubectl get cm -n sunbird player-env -ojsonpath='{.data.sunbird_portal_session_secret}')
+    sed -i '' "s#client_secret: \".*\"#client_secret: \"direct-grant$client_secret\"#g" "$values_file"
+    local token_response
+    token_response=$(curl -s --location "$host/auth/realms/sunbird/protocol/openid-connect/token" \
+        --header "Content-Type: application/x-www-form-urlencoded" \
+        --header "Authorization: Bearer $apikey" \
+        --data-urlencode "client_id=direct-grant" \
+        --data-urlencode "client_secret=direct-grant$client_secret" \
+        --data-urlencode "grant_type=password" \
+        --data-urlencode "username=$username" \
+        --data-urlencode "password=$password")
+    local refresh_token
+    refresh_token=$(echo "$token_response" | jq -r '.refresh_token')
+    echo "Got refresh_token"
+    access_response=$(curl -s --location "$host/auth/v1/refresh/token" \
+    --header "Authorization: Bearer $apikey" \
+    --header "Content-Type: application/x-www-form-urlencoded" \
+    --data-urlencode "refresh_token=$refresh_token")
+    access_token=$(echo "$access_response" | jq -r '.result.access_token')
+    echo "Got access_token"
+    echo "Calling user search API..."
+    local user_response
+    user_response=$(curl -s --location "$host/api/user/v1/search" \
+        --header "Authorization: Bearer $apikey" \
+        --header "x-authenticated-user-token: $access_token" \
+        --header "Content-Type: application/json" \
+        --data-raw "{
+          \"request\": {
+            \"filters\": {
+              \"email\": \"$username\"
+            }
+          }
+        }")
+    local identifier
+    identifier=$(echo "$user_response" | jq -r '.result.response.content[0].identifier')
+    sed -i '' "s#user_id: \".*\"#user_id: \"$identifier\"#g" "$values_file"
+    # Return to original directory
+    cd - > /dev/null
+}
+
 function cleanworkspace() {
         rm  certkey.pem certpubkey.pem
         sed -i '/CERTIFICATE_PRIVATE_KEY:/d' global-values.yaml
@@ -414,6 +502,7 @@ if [ $# -eq 0 ]; then
     update_root_org $environment
     form_data_dump_cassandra
     data_products_migration
+    request_submit_config
 else
     case "$1" in
     "create_tf_backend")

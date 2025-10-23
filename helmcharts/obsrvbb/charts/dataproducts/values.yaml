@@ -105,5 +105,13 @@ dp_raw_telemetry_backup_location: "unique/raw/"
 cloud_storage_endpoint: https://{{ .Values.global.object_storage_endpoint }}
 
 
+baseUrl: ""
+search_url: "http://search-service:9000"
+request_submit_url: "http://analytics-service:9000"
+user_id: ""
 
-
+client_id: "direct-grant"
+client_secret: ""
+username: "contentcreator-fmps@yopmail.com"
+password: "CreatorFmps@123"
+api_key: ""

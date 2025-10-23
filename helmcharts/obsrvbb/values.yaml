@@ -229,6 +229,8 @@ confVolume: &confVolume
                 path: druid-report-processor.py
               - key: druid-report-submitter.py
                 path: druid-report-submitter.py
+              - key: request-submit-job.py
+                path: request-submit-job.py
         - name: obsrvbb-user-cache-indexer-conf
           configMap:
             name: obsrvbb-etl-jobs
