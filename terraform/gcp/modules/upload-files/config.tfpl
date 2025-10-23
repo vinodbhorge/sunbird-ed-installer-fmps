@@ -1,8 +1,13 @@
 [ownaccount]
 type = gcs
-key = ${storage_account_key}
+project_number = ${gcp_project}
+service_account_file = ${gcp_service_account_key}
+bucket_policy_only = true
+object_acl = 
 
 [sunbird]
-type = azureblob
-account = ${sunbird_public_artifacts_account}
-sas_url = ${sunbird_public_artifacts_account_sas_url}
+type = gcs
+project_number = ${gcp_project}
+service_account_file = ${gcp_service_account_key}
+bucket_policy_only = true
+object_acl = 
