@@ -1049,7 +1049,7 @@ flink_jobs:
 
       dedup-redis {
         host = "{{ .Values.global.redis.host }}"
-        port = 6379
+        port = "{{ .Values.global.redis.port }}"
         database.index = "{{ .Values.activity_agg_dedup_index }}"
         database.expiry = "{{ .Values.activity_agg_dedup_expiry }}"
       }
