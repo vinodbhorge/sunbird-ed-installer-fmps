@@ -165,8 +165,8 @@ images:
     tag: "email-special-chars"
 
   content: &content
-    repository: "asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/content"
-    tag: "fmps-1.0.0-auto-pub-25f27732"
+    repository: "asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/content-service"
+    tag: "fmps-1.0.0-auto-pub-fd9f7091"
 
   dial: &dial
     repository: "sunbirded.azurecr.io/sunbird-dial-service"

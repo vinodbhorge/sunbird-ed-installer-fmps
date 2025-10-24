@@ -22,6 +22,28 @@ CREATE TABLE IF NOT EXISTS sb_collection_tracking.batches (
     PRIMARY KEY (activityid, batchid)
 ) WITH CLUSTERING ORDER BY (batchid ASC);
 
+DROP MATERIALIZED VIEW IF EXISTS sb_collection_tracking.batches_by_id;
+CREATE MATERIALIZED VIEW sb_collection_tracking.batches_by_id AS
+    SELECT batchid, activityid, activitytype
+    FROM sb_collection_tracking.batches
+    WHERE batchid IS NOT NULL AND activityid IS NOT NULL
+    PRIMARY KEY (batchid, activityid)
+    WITH CLUSTERING ORDER BY (activityid ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = 'MV: read by batchid (only immutable columns)'
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
 -- User enrolments table
 CREATE TABLE IF NOT EXISTS sb_collection_tracking.user_enrolments (
     userid text,
@@ -42,6 +64,7 @@ CREATE TABLE IF NOT EXISTS sb_collection_tracking.user_enrolments (
 ) WITH CLUSTERING ORDER BY (activityid ASC, activitytype ASC, batchid ASC);
 
 -- User enrolments table view
+DROP MATERIALIZED VIEW IF EXISTS sb_collection_tracking.enrollments_by_batch;
 CREATE MATERIALIZED VIEW sb_collection_tracking.enrollments_by_batch AS
     SELECT activityid, activitytype, batchid, userid, active, addedby, completedon, datetime, enrolled_date, issued_certificates, optional_batches, progress, status, statusmap
     FROM sb_collection_tracking.user_enrolments
