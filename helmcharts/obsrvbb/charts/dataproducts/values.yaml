@@ -56,7 +56,6 @@ etb_dialcode_list_druid_length: 70
 user_table_keyspace: "sunbird"
 course_keyspace: "sunbird_courses"
 collection_keyspace: "sb_collection_tracking"
-course_hierarchy_keyspace: "dev_hierarchy_store"
 report_user_table_keyspace: "sunbird_courses"
 exhaust_batches_limit_per_channel: 30
 exhaust_file_size_limit_bytes_per_channel: "1073741824"
