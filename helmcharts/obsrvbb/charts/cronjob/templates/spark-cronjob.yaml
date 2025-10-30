@@ -389,7 +389,7 @@ kind: CronJob
 metadata:
   name: run-collection-summary
 spec:
-  schedule: "30 9 * * *"
+  schedule: "30 8 * * *"
   jobTemplate:
     spec:
       template:
@@ -414,7 +414,7 @@ kind: CronJob
 metadata:
   name: run-content-indexer
 spec:
-  schedule: "30 9 * * *"
+  schedule: "30 7 * * *"
   jobTemplate:
     spec:
       template:
@@ -430,8 +430,80 @@ spec:
               kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh content-data-indexer"
           restartPolicy: OnFailure
           serviceAccountName: spark-cronjob-sa
+
 ---
 
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: run-cf-summary-report
+spec:
+  schedule: "30 6 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cf-summary-report-cron-job
+            image: sunbirded.azurecr.io/kubectl:1.28.4
+            command:
+            - /bin/sh
+            - -c
+            - |
+              SPARK_POD=spark-master-0
+              kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh cf-summary-report"
+          restartPolicy: OnFailure
+          serviceAccountName: spark-cronjob-sa
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: run-skill-summary-report
+spec:
+  schedule: "30 5 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: skill-summary-report-cron-job
+            image: sunbirded.azurecr.io/kubectl:1.28.4
+            command:
+            - /bin/sh
+            - -c
+            - |
+              SPARK_POD=spark-master-0
+              kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh skill-summary-report"
+          restartPolicy: OnFailure
+          serviceAccountName: spark-cronjob-sa
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: run-collection-batch-status-updater
+spec:
+  schedule: "30 4 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: collection-batch-status-updater-job
+            image: sunbirded.azurecr.io/kubectl:1.28.4
+            command:
+            - /bin/sh
+            - -c
+            - |
+              SPARK_POD=spark-master-0
+              kubectl exec -it $SPARK_POD -- bash -c "bash -x /data/analytics/scripts/run-job.sh collection-batch-status-updater"
+          restartPolicy: OnFailure
+          serviceAccountName: spark-cronjob-sa
+
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
