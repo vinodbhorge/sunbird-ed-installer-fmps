@@ -602,6 +602,7 @@ flink_jobs:
           database {
             contentCache.id = 5
             collectionCache.id = 0
+            cfCache.id = 6
           }
       }
       cert_domain_url = "https://{{ .Values.global.domain }}"
