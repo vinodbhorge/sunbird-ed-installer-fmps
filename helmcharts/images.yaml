@@ -470,9 +470,9 @@ global:
     tag: "fmps-1.0.0-V5"
 
   learnflink:
-    registry: "asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev"
+    registry: "aimansharief"
     repository: "data-pipeline"
-    tag: "release-7.0.0-fmps-1c56887c"
+    tag: "release-7.0.0_cert-v1"
 
   inquiryflink:
     registry: "sunbirded.azurecr.io"
