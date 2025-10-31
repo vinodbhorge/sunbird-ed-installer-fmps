@@ -66,9 +66,11 @@ The installer doesn't require a specific CLI version, but we have documented the
 
 #### Terraform Backend Setup
 
-```
-git clone https://github.com/nimbushubin/sunbird.git
+```bash
+git clone https://github.com/sanketika-labs/sunbird-ed-installer-fmps.git
 cd terraform/gcp
+cp -r template <env> # <env> provide values eg: ( dev, prod, pre-prod)
+cd <env>
 gcloud auth login
 gcloud config set project <your_project_id>
 ```
@@ -103,14 +105,39 @@ proxy_certificate: |
  <certificate_generated_when_setting_up_ssl>
 ```
 
-Then run the following Terraform commands:
+Then run the following  commands:
 
-```
-cd terraform/gcp/dev
-terragrunt init
-terragrunt run-all validate
-terragrunt run-all plan
-# Enter y in the next command
-terragrunt run-all apply
+```bash
+cd terraform/gcp/<env>
+time ./install.sh create_tf_backend backup_configs create_tf_resources
 ```
 
+Note: provide values for relevant prompts comming on the screen.
+
+#### Setting Up Obsrv
+
+Once this is complete. Follow the guidelines in the [obsrv-setup.md](./obsrv-setup.md)
+
+
+#### Deploy Services 
+
+Navigate back to `sanketika-labs/sunbird-ed-installer-fmps`:
+
+```bash
+cd terraform/gcp/<env>
+```
+
+Comment out the following function calls in the `install.sh`
+```
+create_tf_backend backup_configs create_tf_resources
+```
+
+Then run the installation:
+
+```bash
+time ./install.sh
+```
+
+- Confirm that all services are running and accessible in your GKE cluster.
+
+Once the installation is complete. For nominal testing. You will get the sign in credentials [here](../../README.md)

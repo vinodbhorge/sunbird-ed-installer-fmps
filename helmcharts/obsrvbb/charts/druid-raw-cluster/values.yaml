@@ -34,10 +34,10 @@ resources:
   druid_historical:
     requests:
       cpu: 750m
-      memory: 512Mi
+      memory: 750Mi
     limits:
      cpu: 1
-     memory: 2048Mi
+     memory: 6144Mi
   druid_indexer:
     requests:
       cpu: 200m

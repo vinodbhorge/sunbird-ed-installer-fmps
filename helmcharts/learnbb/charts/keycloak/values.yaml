@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/keycloak
-  tag: "7.0.6"
+  tag: "7.0.7"
   pullPolicy: IfNotPresent
   pullSecrets: []
 

@@ -46,3 +46,6 @@ dependencies:
   - name: neo4j
     condition: neo4j.enabled
     version: 0.1.0
+  - name: dial
+    condition: dial.enabled
+    version: 0.1.0

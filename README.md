@@ -37,7 +37,7 @@
 
 1. Clone the repository:a
      ```bash
-     git clone https://github.com/project-sunbird/sunbird-ed-installer.git
+     git clone https://github.com/Sanketika-labs/sunbird-ed-installer-fmps.git
      ```
 2. Copy the template directory:
      ```bash
@@ -59,27 +59,42 @@
     # If cloud provider is GCP
     gcloud auth login
     ```
-5. Run the installation script:
-     ```bash
-     time ./install.sh
-     ```
+5. Based on cloud provider refer to the following for installation;
+    - [GCP](terraform/gcp/README.md)
+    - [Azure](terraform/azure/README.md])
+    - [AWS](terraform/aws/README.md)
 
 ## Default Users in the Instance
 
 This installation setup creates the following default users with different roles. You can update the passwords using the "Forgot Password" option or create new users using APIs.
 
-| Role              | Email/User Name           | Password         |
-|-------------------|---------------------------|------------------|
-| Admin             | admin@yopmail.com         | Admin@123        |
-| Content Creator   | contentcreator@yopmail.com| Creator@123      |
-| Content Reviewer  | contentreviewer@yopmail.com | Reviewer@123   |
-| Book Creator      | bookcreator@yopmail.com   | Bookcreator@123  |
-| Book Reviewer     | bookreviewer@yopmail.com  | BookReviewer@123 |
-| Public User 1     | user1@yopmail.com         | User1@123        |
-| Public User 2     | user2@yopmail.com         | User2@123        |
+| Role              | Email/User Name                  | Password             |
+|-------------------|----------------------------------|----------------------|
+| Admin             | admin-fmps@yopmail.com           | AdminFmps@123        |
+| Content Creator   | contentcreator-fmps@yopmail.com  | CreatorFmps@123      |
+| Content Reviewer  | contentreviewer-fmps@yopmail.com | ReviewerFmps@123     |
+| Book Creator      | bookcreator-fmps@yopmail.com     | BookCreatorFmps@123  |
+| Book Reviewer     | bookreviewer-fmps@yopmail.com    | BookReviewerFmps@123 |
+| Public User 1     | user1@yopmail.com                | User1@123            |
+| Public User 2     | user2@yopmail.com                | User2@123            |
+
+## Upgrading Services
+
+For any new implementations or updated image tags, upgrade the component using:
+```bash
+time ./install.sh install_component <building_block>
+```
+Replace <building_block> with the name of the building block in which updates are applied.
+
+### Example: 
+If the player tag is updated, please verify the corresponding building block from which the player service is deployed. In this case, the player service is deployed from the edbb building block.
+```bash
+time ./install.sh install_component edbb
+```
 
 
 ##  Destorying the sunbird instance
 ```bash
 cd terraform/<cloud-provider>/<env>
 time ./install.sh destroy_tf_resources
+```

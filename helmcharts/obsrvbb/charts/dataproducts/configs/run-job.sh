@@ -41,9 +41,19 @@ get_report_job_model_name(){
     ;;
 		"collection-summary-report") echo 'org.sunbird.analytics.job.report.CollectionSummaryJob'
 		;;
+		"cf-summary-report") echo 'org.sunbird.analytics.job.report.CFSummaryReport'
+		;;
+		"skill-summary-report") echo 'org.sunbird.analytics.job.report.UserSkillSummaryReport'
+		;;
 		"program-collection-summary-report") echo 'org.sunbird.analytics.job.report.CollectionSummaryJob'
 		;;
 		"collection-summary-report-v2") echo  'org.sunbird.analytics.job.report.UserSummaryReport'
+		;;
+		"content-data-indexer") echo  'org.sunbird.analytics.job.report.ContentDataIndexerJob'
+		;;
+		"user-master-data-indexer") echo  'org.sunbird.analytics.job.report.UserMasterDataIndexerV2'
+        ;;
+		"collection-batch-status-updater") echo  'org.sunbird.analytics.audit.CollectionBatchStatusUpdaterJob'
 		;;
 		"assessment-score-metric-correction") echo 'org.sunbird.analytics.audit.AssessmentScoreCorrectionJob'
 		;;

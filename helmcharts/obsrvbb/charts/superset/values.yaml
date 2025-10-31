@@ -24,9 +24,9 @@
 # To update it, install helm-docs and run helm-docs from the root of this chart
 
 # -- Provide a name to override the name of the chart
-nameOverride: ~
+nameOverride: superset
 # -- Provide a name to override the full names of resources
-fullnameOverride: ~
+fullnameOverride: superset
 
 # -- Labels to be added to all resources
 extraLabels: {}
@@ -145,7 +145,7 @@ extraVolumeMounts: []
 # Files can be passed as helm --set-file configOverrides.my-override=my-file.py
 configOverrides:
   webserver_base_url: |
-    WEBSERVER_BASE_URL = "https://superset.maharat.fmps.ma"
+    WEBSERVER_BASE_URL = "https://superset.{{ .Values.global.domain }}"
 
 # -- Same as above but the values are files
 configOverridesFiles: {}

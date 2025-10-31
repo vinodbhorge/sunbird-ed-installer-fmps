@@ -37,6 +37,8 @@ ingestion_spec:
     topic: druid.events.error
     name: druid_events_error
 
+submit_ingestion_job:
+  enabled: false
 global:
   kafka: *kafka
   druid: *druid

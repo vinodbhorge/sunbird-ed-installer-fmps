@@ -37,6 +37,27 @@ spec:
           cwd=$PWD
           rm -rf /tmp/sunbird-devops/ || true
 
+          #### Applying custom index from chart: activity-batch
+          cd /tmp/
+          echo "Writing activity-batch.json from chart files"
+          cat > activity-batch.json << 'EOF'
+          {{ .Files.Get "files/activity-batch.json" | indent 10 }}
+          EOF
+          
+          # Check if index exists before creating
+          echo "Checking if activity-batch index exists"
+          if ! curl -s -f -o /dev/null http://{{.Values.global.elasticsearch.host}}:{{.Values.global.elasticsearch.port}}/activity-batch; then
+            echo "Creating index activity-batch with settings and mappings"
+            if curl -X PUT http://{{.Values.global.elasticsearch.host}}:{{.Values.global.elasticsearch.port}}/activity-batch -H 'Content-Type: application/json' -d @activity-batch.json; then
+              echo "Successfully created activity-batch index"
+            else
+              echo "Failed to create activity-batch index"
+              exit 1
+            fi
+          else
+            echo "Index activity-batch already exists, skipping creation"
+          fi
+
           # Download the migration files
           git clone --filter=blob:none --no-checkout https://github.com/project-sunbird/sunbird-devops --branch=$devops_branch --depth 1
           cd sunbird-devops

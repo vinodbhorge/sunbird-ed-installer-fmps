@@ -7,8 +7,8 @@ replicaCount: 1
 #   tag: "release-5.2.0_RC1_2c615f8_12"
 # docker pull sunbirded.azurecr.io/sunbird-datapipeline:release-4.9.0_RC4_1
 image:
-  repository: aimansharief/sunbird-data-pipeline
-  tag: "release-5.2.1_v3"
+  repository: asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/sunbird-data-pipeline
+  tag: "release-5.2.1_v4"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -436,7 +436,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.extractor.task.TelemetryExtractorStreamTask
 
   pipeline-preprocessor:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -480,7 +480,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.preprocessor.task.PipelinePreprocessorStreamTask
 
   de-normalization-secondary:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -543,7 +543,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.denorm.task.DenormalizationStreamTask
 
   de-normalization-primary:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -606,7 +606,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.denorm.task.DenormalizationStreamTask
 
   summary-denormalization:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -669,7 +669,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.denorm.task.SummaryDenormalizationStreamTask
 
   druid-validator:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -718,7 +718,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.validator.task.DruidValidatorStreamTask
 
   device-profile-updater:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -755,7 +755,7 @@ flink_jobs:
     job_classname: org.sunbird.dp.deviceprofile.task.DeviceProfileUpdaterStreamTask
 
   content-cache-updater:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
@@ -796,8 +796,12 @@ flink_jobs:
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
-        input.topic = {{ .Values.global.env }}.telemetry.audit
+        input.topic = telemetry
         groupId = {{ .Values.global.env }}-user-cache-updater-consumer-group
+        broker-servers = "kafka-headless.kafka.svc.cluster.local:9092"
+        producer.broker-servers = "kafka-headless.kafka.svc.cluster.local:9092"
+        consumer.broker-servers = "kafka-headless.kafka.svc.cluster.local:9092"
+        zookeeper = "kafka-zookeeper-headless.kafka.svc.cluster.local:2181"
       }
       task {
         usercache.updater.parallelism = {{ .Values.usercache_updater_parallelism }}
@@ -882,7 +886,7 @@ flink_jobs:
   #   job_classname: org.sunbird.dp.assessment.task.AssessmentAggregatorStreamTask
 
   error-denormalization:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {

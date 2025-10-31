@@ -4,8 +4,8 @@ fullnameOverride: ""
 replicaCount: 1
 
 image:
-  repository: sunbirded.azurecr.io/knowledge-platform-jobs
-  tag: "release-5.7.0_RC3_7041b60"
+  repository: asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/knowledge-platform-jobs
+  tag: "release-5.7.0-FMPS-1.0-V11"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -401,6 +401,7 @@ flink_jobs:
       include file("/data/flink/conf/base-config.conf")
       job {
         env = "{{ .Values.global.env }}"
+        timezone = "Asia/Kolkata"
       }
 
       kafka {
@@ -418,6 +419,7 @@ flink_jobs:
         link_dialcode.parallelism = 1
         batch_create.parallelism = 1
         dialcode_context_updater.parallelism = 1
+        activity_batch_create.parallelism = 1
       }
 
       lms-cassandra {
@@ -440,6 +442,12 @@ flink_jobs:
 
       dialcode {
         linkable.primaryCategory = ["Course"]
+        enabled = false
+      }
+
+      activity {
+        batch.creation.enabled = true
+        batch.creation.primaryCategories = ["Competency Framework"]
       }
 
       cloudstorage.metadata.replace_absolute_path=true
@@ -475,7 +483,7 @@ flink_jobs:
     job_classname: org.sunbird.job.postpublish.task.PostPublishProcessorStreamTask
 
   dialcode-context-updater:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       job {
@@ -532,7 +540,7 @@ flink_jobs:
 
 
   qrcode-image-generator:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       job {
@@ -602,7 +610,7 @@ flink_jobs:
     job_classname: org.sunbird.job.qrimagegenerator.task.QRCodeImageGeneratorTask
 
   video-stream-generator:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       job {
@@ -776,6 +784,8 @@ flink_jobs:
         mvc.topic = "{{ .Values.global.env }}.knowlg.mvc.processor.job.request"
         error.topic = "{{ .Values.global.env }}.knowlg.learning.events.failed"
         groupId = "{{ .Values.global.env }}-content-publish-group"
+        refresh_body.topic = "{{ .Values.global.env }}.content.postrefresh.request"
+
       }
 
       task {
@@ -789,6 +799,9 @@ flink_jobs:
           contentCache.id = 0
         }
       }
+      difficulty.multiplier = 5
+      content.publish.defaults.isShuffleOption = true
+      content.publish.defaults.isPartialScore = true
 
       content {
         bundleLocation = "/tmp/contentBundle"
@@ -884,6 +897,9 @@ flink_jobs:
 
       service {
         print.basePath = "http://print:5000"
+        search.basePath = "http://search-service:9000"
+        content.basePath = "http://content-service:9000"
+        learning_service.basePath = "http://learning:8080"
       }
 
       contentTypeToPrimaryCategory {
@@ -938,6 +954,7 @@ flink_jobs:
       cloud_storage_secret="{{ .Values.global.cloud_storage_secret_key }}"
       cloud_storage_container="{{ .Values.global.public_container_name }}"
       cloud_storage_endpoint=""
+      content.basePath = "http://content-service:9000"
       schema.basePath="https://{{ .Values.global.object_storage_endpoint }}/{{ .Values.global.public_container_name }}/schemas/local"
     flink-conf: |+
       jobmanager.memory.flink.size: 1024m
