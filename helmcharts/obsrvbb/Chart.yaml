@@ -53,3 +53,9 @@ dependencies:
   - name: superset
     version: 0.1.0
     condition: superset.enabled
+  - name: druid-operator
+    version: 0.1.1
+    condition: druid-operator.enabled
+  - name: druid-raw-cluster
+    version: 0.1.1
+    condition: druid-raw-cluster.enabled

@@ -9,8 +9,8 @@ redis:
 postgresql:
   enabled: false
 druid-operator:
-  enabled: true
+  enabled: false
 druid-raw-cluster:
-  enabled: true
+  enabled: false
 superset:
   enabled: false

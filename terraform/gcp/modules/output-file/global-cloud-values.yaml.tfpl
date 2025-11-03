@@ -36,25 +36,25 @@ velero:
         provider: ${cloud_storage_provider}
         bucket: "${gcp_velero_storage_container_private}"
         config:
-          prefix: 
+          prefix: backups
           serviceAccount: ${gcp_storage_account_email}
-    dbbackupbackupStorageLocation:
+    dbbackupStorageLocation:
       - name: dbbackup
         provider: ${cloud_storage_provider}
-        bucket: "$${gcp_velero_storage_container_private}"
+        bucket: "${gcp_velero_storage_container_private}"
         config:
-          prefix: 
-          serviceAccount: ${gcp_storage_account_email}      
+          prefix: db_backups
+          serviceAccount: ${gcp_storage_account_email}
     backupSyncPeriod: 15m
     volumeSnapshotLocation:
     - name: default
       provider: ${cloud_storage_provider}
       config:
         project: ${gcp_project_id}
-        region:  ${cloud_storage_region}     
+        region:  ${cloud_storage_region}
   initContainers:
-    - image: velero/velero-plugin-for-gcp
-      name: velero-plugin-for-gcp
+    - name: velero-plugin-for-gcp
+      image: velero/velero-plugin-for-gcp:v1.11.0
       volumeMounts:
         - mountPath: /target
           name: plugins  

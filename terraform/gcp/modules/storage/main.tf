@@ -37,6 +37,17 @@ resource "google_storage_bucket" "storage_container_public" {
     response_header = ["*"]
     max_age_seconds = 3600
   }
+  
+  cors {
+    origin = [
+      "https://localhost",
+      "capacitor://localhost",
+      "ionic://localhost"
+    ]
+    method          = ["GET"]
+    response_header = ["*"]
+    max_age_seconds = 3600
+  }
 }
 
 resource "google_storage_bucket_iam_member" "read_write_public" {

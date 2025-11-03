@@ -57,19 +57,23 @@ function certificate_keys() {
 }
 
 function certificate_config() {
-    # Check if the key is already present in RC 
-    echo "Configuring Certificatekeys"
-    kubectl -n sunbird exec deploy/nodebb -- apt update -y
-    kubectl -n sunbird exec deploy/nodebb -- apt install jq -y
-    CERTKEY=`kubectl -n sunbird exec deploy/nodebb -- curl --location --request POST 'http://registry-service:8081/api/v1/PublicKey/search' --header 'Content-Type: application/json' --data-raw '{ "filters": {}}' | jq '.[] | .value'`
-    # Inject cert keys to the service if its not available 
-    if [ "$CERTKEY" = "" ]; then
-            echo "Certificate RSA public key not available"
-            CERTPUBKEY=`awk -F'"' '/CERTIFICATE_PUBLIC_KEY/{print $2}' global-values.yaml`
-            curl_data="curl --location --request POST 'http://registry-service:8081/api/v1/PublicKey' --header 'Content-Type: application/json' --data-raw '{\"value\":\"$CERTPUBKEY\"}'"
-            echo "kubectl -n sunbird exec deploy/nodebb -- $curl_data" | sh -
+    # Check if jq is available in the nodebb container, install only if missing
+    echo "Configuring Certificate keys"
+    if ! kubectl -n sunbird exec deploy/nodebb -- which jq >/dev/null 2>&1; then
+        echo "jq not found in nodebb container, attempting to install..."
+        # Try to install jq using available package manager, fallback if apt fails
+        kubectl -n sunbird exec deploy/nodebb -- bash -c "apt-get update || true"
+        kubectl -n sunbird exec deploy/nodebb -- bash -c "apt-get install -y jq || true"
     fi
 
+    CERTKEY=$(kubectl -n sunbird exec deploy/nodebb -- curl --location --request POST 'http://registry-service:8081/api/v1/PublicKey/search' --header 'Content-Type: application/json' --data-raw '{ "filters": {}}' | jq '.[] | .value')
+    # Inject cert keys to the service if its not available 
+    if [ -z "$CERTKEY" ]; then
+        echo "Certificate RSA public key not available"
+        CERTPUBKEY=$(awk -F'"' '/CERTIFICATE_PUBLIC_KEY/{print $2}' global-values.yaml)
+        curl_data="curl --location --request POST 'http://registry-service:8081/api/v1/PublicKey' --header 'Content-Type: application/json' --data-raw '{\"value\":\"$CERTPUBKEY\"}'"
+        echo "kubectl -n sunbird exec deploy/nodebb -- $curl_data" | sh -
+    fi
 }
 
 function install_component() {
@@ -104,8 +108,10 @@ function install_component() {
       fi
     helm upgrade --install "$component" "$component" --namespace sunbird -f "$component/values.yaml" \
         $ed_values_flag \
+        -f "images.yaml" \
         -f "global-resources.yaml" \
         -f "../terraform/gcp/$environment/global-values.yaml" \
+        -f "../terraform/gcp/$environment/monitoring-values.yaml" \
         -f "../terraform/gcp/$environment/global-cloud-values.yaml" --timeout 30m --debug
 }
 
@@ -154,6 +160,7 @@ function generate_postman_env() {
     keycloak_secret=$(kubectl get cm -n sunbird player-env -ojsonpath='{.data.sunbird_portal_session_secret}')
     keycloak_admin=$(kubectl get cm -n sunbird userorg-env -ojsonpath='{.data.sunbird_sso_username}')
     keycloak_password=$(kubectl get cm -n sunbird userorg-env -ojsonpath='{.data.sunbird_sso_password}')
+    googleClientId=$(kubectl get cm -n sunbird player-env -ojsonpath='{.data.sunbird_google_oauth_clientId}')
     generated_uuid=$(uuidgen)
     temp_file=$(mktemp)
     cp postman.env.json "${temp_file}"
@@ -165,6 +172,7 @@ function generate_postman_env() {
         -e "s|GENERATE_UUID|${generated_uuid}|g" \
         -e "s|BLOB_STORE_PATH|${blob_store_path}|g" \
         -e "s|PUBLIC_CONTAINER_NAME|${public_container_name}|g" \
+        -e "s|SUNBIRD_GOOGLE_CLIENT_ID|${googleClientId}|g" \
         "${temp_file}" >"env.json"
 
     echo -e "A env.json file is created in this directory: terraform/gcp/$environment"
@@ -189,6 +197,24 @@ function run_post_install() {
     postman collection run collection${RELEASE}.json --environment env.json --delay-request 500 --bail --insecure
 }
 
+function post_install_nodebb_plugins() {
+    echo ">> Waiting for NodeBB deployment to be ready..."
+    kubectl rollout status deployment nodebb -n sunbird --timeout=300s
+
+    echo ">> Activating NodeBB plugins..."
+    kubectl exec -n sunbird deploy/nodebb -- ./nodebb activate nodebb-plugin-create-forum
+    kubectl exec -n sunbird deploy/nodebb -- ./nodebb activate nodebb-plugin-sunbird-oidc
+    kubectl exec -n sunbird deploy/nodebb -- ./nodebb activate nodebb-plugin-write-api
+
+    echo ">> Rebuilding NodeBB to apply plugin changes..."
+    kubectl exec -n sunbird deploy/nodebb -- ./nodebb build
+
+    echo ">> Restarting NodeBB..."
+    kubectl delete pod -n sunbird -l app.kubernetes.io/name=nodebb
+
+    echo "NodeBB plugins are activated, built, and NodeBB has been restarted."
+}
+
 function create_client_forms() {
     local current_directory="$(pwd)"
     if [ "$(basename $current_directory)" != "$environment" ]; then
@@ -202,6 +228,208 @@ function create_client_forms() {
       postman collection run $FILES --environment env.json --delay-request 500 --bail --insecure
     done 
    }
+
+function get_new_root_org() {
+    local env_file="env.json"
+    if [ ! -f "$env_file" ]; then
+        echo "Error: $env_file not found!"
+        return 1
+    fi
+    local host
+    local apikey
+    host=$(jq -r '.values[] | select(.key=="host") | .value' "$env_file")
+    apikey=$(jq -r '.values[] | select(.key=="apikey") | .value' "$env_file")
+    if [[ -z "$host" || -z "$apikey" || "$host" == "null" || "$apikey" == "null" ]]; then
+        echo "Error: host or apikey missing in $env_file"
+        return 1
+    fi
+    local root_org
+    root_org=$(curl --silent --location --globoff --request POST "$host/api/org/v1/search" \
+        --header "Authorization: Bearer $apikey" \
+        --header "Content-Type: application/json" \
+        --data '{
+            "request": {
+                "filters": {
+                    "orgName": "FMPS"
+                },
+                "fields": [
+                    "rootOrgId"
+                ]
+            }
+        }' | jq -r '.result.response.content[0].rootOrgId')
+    if [ -z "$root_org" ] || [ "$root_org" == "null" ]; then
+        echo "Error: Could not fetch rootOrgId"
+        return 1
+    fi
+
+    echo "$root_org|$host"
+}
+
+function update_root_org() {
+    local environment="$1"
+    local new_root_org_and_host
+    new_root_org_and_host="$(get_new_root_org)" || return 1
+
+    local new_root_org
+    local new_host
+    new_root_org=$(echo "$new_root_org_and_host" | cut -d'|' -f1)
+    new_host=$(echo "$new_root_org_and_host" | cut -d'|' -f2)
+
+    local source_dir="../../../cassandra-backup"
+    local backup_dir="$source_dir/$environment"
+
+    if [ ! -d "$source_dir" ]; then
+        echo "Source directory $source_dir not found!"
+        return 1
+    fi
+
+    if [ ! -f "$source_dir/form_data.csv" ]; then
+        echo "form_data.csv not found in $source_dir"
+        return 1
+    fi
+
+    mkdir -p "$backup_dir"
+
+    awk -F',' -v new_id="$new_root_org" -v new_host="$new_host" 'BEGIN{OFS=","}
+        NR==1 {print; next}
+        {
+            if ($1!="*") $1=new_id
+            gsub("https://gcp-fmps.sunbirded.org", new_host, $0)
+        }
+        {print}
+    ' "$source_dir/form_data.csv" > "$backup_dir/form_data_updated.csv"
+
+    echo "Updated file created at: $backup_dir/form_data_updated.csv"
+}
+
+function form_data_dump_cassandra() {
+    local backup_dir="../../../cassandra-backup/$environment"
+    if [ -d "$backup_dir" ]; then
+        cd "$backup_dir" || return
+    fi
+    local namespace="sunbird"
+    local secret_name="cassandra"
+    local cass_pass
+    cass_pass=$(kubectl -n $namespace get secret $secret_name -o jsonpath="{.data.cassandra-password}" | base64 -d)
+    kubectl -n $namespace cp form_data_updated.csv cassandra-0:/tmp/form_data_updated.csv
+    echo "Truncating table inside Cassandra pod..."
+    kubectl -n $namespace exec -i cassandra-0 -- \
+      cqlsh -u cassandra -p "$cass_pass" -e "TRUNCATE qmzbm_form_service.form_data;" localhost
+    echo "Importing data from form_data_updated.csv ..."
+    kubectl -n $namespace exec -i cassandra-0 -- \
+      cqlsh -u cassandra -p "$cass_pass" -e "
+        COPY qmzbm_form_service.form_data (
+        root_org, framework, type, subtype, action, component, created_on, data, last_modified_on
+        )
+        FROM '/tmp/form_data_updated.csv'
+        WITH HEADER=TRUE
+        AND NULL='null'
+        AND PAGESIZE=100
+        AND CHUNKSIZE=10
+        AND INGESTRATE=10
+        AND MAXATTEMPTS=20
+        AND ERRFILE='/tmp/form_data_import.err';
+      "
+    echo "Done."
+}
+
+function data_products_migration() {
+    public_container_name=$(kubectl get cm -n sunbird player-env -ojsonpath='{.data.cloud_storage_resourceBundle_bucketname}')
+    gsutil cp \
+        "gs://ed-prod-public-41ea104737/artifacts-release-7.0.0/data-products-1.0.jar" \
+        "gs://${public_container_name}/artifacts-release-7.0.0/data-products-1.0.jar"
+    echo -e "\nData products jar copied to public container: ${public_container_name}/artifacts-release-7.0.0/data-products-1.0.jar"
+    echo -e "\nRestarting spark-master..."
+    kubectl rollout restart statefulset -n sunbird spark-master
+    kubectl rollout status statefulset -n sunbird spark-master
+}
+
+function request_submit_config() {
+    local env_file="env.json"
+    local values_file="values.yaml"
+    local target_dir="../../../helmcharts/obsrvbb/charts/dataproducts"
+    if [ ! -f "$env_file" ]; then
+        echo "Error: $env_file not found!"
+        return 1
+    fi
+    # Get absolute path of env.json from current directory
+    local env_file_abs_path="$(pwd)/$env_file"
+    # Check if target directory exists
+    if [ ! -d "$target_dir" ]; then
+        echo "Error: Directory $target_dir not found!"
+        return 1
+    fi
+    # Change to the target directory
+    cd "$target_dir" || {
+        echo "Error: Failed to change to directory $target_dir"
+        return 1
+    }
+    if [ ! -f "$values_file" ]; then
+        echo "Error: $values_file not found in $(pwd)!"
+        cd - > /dev/null
+        return 1
+    fi
+    local username
+    local password
+    username=$(yq -r '.username' "$values_file")
+    password=$(yq -r '.password' "$values_file")
+
+    if [ -z "$username" ] || [ -z "$password" ] ; then
+        return 1
+    fi
+    local host
+    local apikey
+    host=$(jq -r '.values[] | select(.key=="host") | .value' "$env_file_abs_path")
+    apikey=$(jq -r '.values[] | select(.key=="apikey") | .value' "$env_file_abs_path")
+    
+    if [[ -z "$host" || -z "$apikey" || "$host" == "null" || "$apikey" == "null" ]]; then
+        echo "Error: host or apikey missing in $env_file"
+        cd - > /dev/null
+        return 1
+    fi
+    # Update baseUrl and api_key in values.yaml using # as delimiter to avoid path conflicts
+    sed -i '' "s#baseUrl: \".*\"#baseUrl: \"$host\"#g" "$values_file"
+    sed -i '' "s#api_key: \".*\"#api_key: \"$apikey\"#g" "$values_file"
+    echo "Successfully updated $values_file"
+    client_secret=$(kubectl get cm -n sunbird player-env -ojsonpath='{.data.sunbird_portal_session_secret}')
+    sed -i '' "s#client_secret: \".*\"#client_secret: \"direct-grant$client_secret\"#g" "$values_file"
+    local token_response
+    token_response=$(curl -s --location "$host/auth/realms/sunbird/protocol/openid-connect/token" \
+        --header "Content-Type: application/x-www-form-urlencoded" \
+        --header "Authorization: Bearer $apikey" \
+        --data-urlencode "client_id=direct-grant" \
+        --data-urlencode "client_secret=direct-grant$client_secret" \
+        --data-urlencode "grant_type=password" \
+        --data-urlencode "username=$username" \
+        --data-urlencode "password=$password")
+    local refresh_token
+    refresh_token=$(echo "$token_response" | jq -r '.refresh_token')
+    echo "Got refresh_token"
+    access_response=$(curl -s --location "$host/auth/v1/refresh/token" \
+    --header "Authorization: Bearer $apikey" \
+    --header "Content-Type: application/x-www-form-urlencoded" \
+    --data-urlencode "refresh_token=$refresh_token")
+    access_token=$(echo "$access_response" | jq -r '.result.access_token')
+    echo "Got access_token"
+    echo "Calling user search API..."
+    local user_response
+    user_response=$(curl -s --location "$host/api/user/v1/search" \
+        --header "Authorization: Bearer $apikey" \
+        --header "x-authenticated-user-token: $access_token" \
+        --header "Content-Type: application/json" \
+        --data-raw "{
+          \"request\": {
+            \"filters\": {
+              \"email\": \"$username\"
+            }
+          }
+        }")
+    local identifier
+    identifier=$(echo "$user_response" | jq -r '.result.response.content[0].identifier')
+    sed -i '' "s#user_id: \".*\"#user_id: \"$identifier\"#g" "$values_file"
+    # Return to original directory
+    cd - > /dev/null
+}
 
 function cleanworkspace() {
         rm  certkey.pem certpubkey.pem
@@ -263,12 +491,18 @@ if [ $# -eq 0 ]; then
     cd ../../../helmcharts
     install_helm_components
     cd ../terraform/gcp/$environment
+    post_install_nodebb_plugins
     restart_workloads_using_keys
     certificate_config
     dns_mapping
     generate_postman_env
     run_post_install
     create_client_forms
+    get_new_root_org
+    update_root_org $environment
+    form_data_dump_cassandra
+    data_products_migration
+    request_submit_config
 else
     case "$1" in
     "create_tf_backend")
@@ -301,6 +535,21 @@ else
         ;;
     "create_client_forms")
         create_client_forms
+        ;;
+    "get_new_root_org")
+        get_new_root_org
+        ;;
+    "update_root_org")
+        update_root_org "$environment"
+        ;;
+    "form_data_dump_cassandra")
+        form_data_dump_cassandra
+        ;;
+    "post_install_nodebb_plugins")
+        post_install_nodebb_plugins
+        ;;
+    "data_products_migration")
+        data_products_migration
         ;;
     *)
         invoke_functions "$@"

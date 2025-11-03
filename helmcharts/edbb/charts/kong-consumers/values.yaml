@@ -172,6 +172,7 @@ kong_all_consumer_groups: &kong_all_consumer_groups
   - druidReportCreate
   - druidReportAdmin
   - dataCreate
+  - frameworkAdmin
   - frameworkAccess
   - programAccess
   - solutionAccess
@@ -225,6 +226,7 @@ kong_admin_groups:
   - cloudUrlsCreate
   - contentAccess
   - contentAdmin
+  - frameworkAdmin
   - contentCreate
   - contentSuperAdmin
   - contentUpdate

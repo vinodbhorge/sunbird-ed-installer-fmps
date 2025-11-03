@@ -1,3 +1,4 @@
+{{- if .Values.submit_ingestion_job.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -59,4 +60,4 @@ spec:
           configMap:
             name: ingestion-spec-config
 
-
+{{- end }}
