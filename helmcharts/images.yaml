@@ -73,7 +73,7 @@ images:
 
   player: &player
     repository: "asia-south1-docker.pkg.dev/sunbird-morocco-sandbox-434709/sunbird-morocco-artifact-dev/player"
-    tag: "v5.180"
+    tag: "v5.181"
 
   report: &report
     repository: "sunbirded.azurecr.io/report-service"
