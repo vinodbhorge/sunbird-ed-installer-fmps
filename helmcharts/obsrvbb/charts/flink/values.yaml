@@ -218,7 +218,7 @@ device_profile_table: "_device_profile"
 dialcode_api_auth_key: ""
 
 #(user read api details)
-user_read_api_endpoint: "/private/user/v1/read/"
+user_read_api_endpoint: "private/user/v1/read/"
 user_read_api_url: "userorg-service:9000"
 
 ### User-cache-updater related vars
