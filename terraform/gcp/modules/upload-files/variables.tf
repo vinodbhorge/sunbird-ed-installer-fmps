@@ -1,32 +1,27 @@
-variable "storage_account_name" {
+variable "gcp_project" {
     type        = string
-    description = "Storage account name."
+    description = "GCP project ID where the bucket is located."
 }
 
-variable "storage_container_public" {
+variable "gcp_bucket_name" {
     type        = string
-    description = "Public storage container name with blob access."
+    description = "GCP bucket name for storing artifacts."
 }
 
-variable "storage_account_primary_access_key" {
+variable "gcp_service_account_key" {
     type        = string
-    description = "Storage account primary access key."
+    description = "GCP service account key file path for authentication."
+    sensitive   = true
 }
 
-variable "sunbird_public_artifacts_account" {
+variable "sunbird_public_artifacts_bucket" {
     type        = string
-    description = "The public account name where storage artifacts are published for this release."
-    default     = "downloadableartifacts"
+    description = "The public GCP bucket name where storage artifacts are published for this release."
+    default     = "sunbird-downloadableartifacts"
 }
 
-variable "sunbird_public_artifacts_account_sas_url" {
+variable "sunbird_public_artifacts_path" {
     type        = string
-    description = "The readonly sas token url for the sunbird public account."
-    default     = "https://downloadableartifacts.blob.core.windows.net/?sv=2022-11-02&ss=bf&srt=co&sp=rlitfx&se=2026-08-30T20:37:29Z&st=2024-07-10T12:37:29Z&spr=https&sig=hcXksbrbR%2BJgCB0EKxiwHCSsQ6r2eSlyOVnqnjxFOH0%3D"
-}
-
-variable "sunbird_public_artifacts_container" {
-    type        = string
-    description = "The container name dedicated for this release which holds the storage artifatcs."
+    description = "The path within the bucket dedicated for this release which holds the storage artifacts."
     default     = "release700"
 }

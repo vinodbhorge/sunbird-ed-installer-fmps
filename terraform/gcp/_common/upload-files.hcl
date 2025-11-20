@@ -3,6 +3,10 @@ terraform {
   source = "../../modules//upload-files/"
 }
 
+locals {
+  global_vars = yamldecode(file(find_in_parent_folders("global-values.yaml")))
+}
+
 dependency "storage" {
     config_path = "../storage"
     mock_outputs = {
@@ -19,7 +23,7 @@ dependency "service-account" {
 }
 
 inputs = {
-  storage_container_public              = dependency.storage.outputs.gcp_public_container_name
-  storage_account_name                  = dependency.service-account.outputs.service_account_key_email
-  storage_account_primary_access_key    = dependency.service-account.outputs.service_account_key_local_path
+  gcp_project                          = local.global_vars.global.cloud_storage_project
+  gcp_bucket_name                      = dependency.storage.outputs.gcp_public_container_name
+  gcp_service_account_key              = dependency.service-account.outputs.service_account_key_local_path
 }
