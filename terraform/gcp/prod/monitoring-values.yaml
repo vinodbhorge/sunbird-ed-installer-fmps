@@ -1,0 +1,31 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      additionalScrapeConfigs:
+        - job_name: 'redis_exporter_targets'
+          static_configs:
+            - targets:
+                - redis://valkey-denorm-headless.redis.svc.cluster.local:6379
+                - redis://valkey-dedup-headless.redis.svc.cluster.local:6379
+          metrics_path: /metrics
+          relabel_configs:
+            - source_labels: [__address__]
+              regex: 'redis://valkey-denorm-headless.redis.svc.cluster.local:6379'
+              target_label: __address__
+              replacement: valkey-denorm-metrics.redis.svc.cluster.local:9121
+            - source_labels: [__address__]
+              regex: 'redis://valkey-dedup-headless.redis.svc.cluster.local:6379'
+              target_label: __address__
+              replacement: valkey-dedup-metrics.redis.svc.cluster.local:9121
+            - source_labels: [__address__]
+              target_label: __param_target
+            - source_labels: [__param_target]
+              target_label: instance
+        - job_name: 'kafka-exporter'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['kafka-metrics.kafka.svc.cluster.local:9308']
+        - job_name: 'pushgateway'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['monitoring-prometheus-pushgateway.monitoring.svc.cluster.local:9091']

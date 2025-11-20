@@ -861,7 +861,7 @@ flink_jobs:
     job_classname: org.sunbird.job.notification.task.NotificationStreamTask
 
   program-user-info:
-    enabled: true
+    enabled: false
     config: |+
       include file("/data/flink/conf/base-config.conf")
       kafka {
