@@ -9,7 +9,8 @@ locals {
       environment = "${var.environment}"
       BuildingBlock = "${var.building_block}"
     }
-    environment_name = "${var.building_block}-${var.environment}"
+    # environment_name = "${var.building_block}-${var.environment}"
+    environment_name = "ed-fmps-staging-v2"
 }
 resource "google_compute_network" "vpc" {
   name    = "${local.environment_name}-network"

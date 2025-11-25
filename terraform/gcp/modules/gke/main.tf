@@ -14,7 +14,8 @@ locals {
     BuildingBlock  = var.building_block
   }
 
-  environment_name = "${var.building_block}-${var.environment}"
+  # environment_name = "${var.building_block}-${var.environment}"
+  environment_name = "ed-fmps-staging-v2"
 }
 
 resource "google_container_cluster" "cluster" {
@@ -153,7 +154,8 @@ resource "google_container_cluster" "cluster" {
 resource "google_container_node_pool" "node_pool" {
   provider = google
 
-  name     = "${var.building_block}-${var.environment}-pool"
+  # name     = "${var.building_block}-${var.environment}-pool"
+  name     = "ed-fmps-staging-v2-pool"
   project  = var.project
   location = var.location  # Fixed: should match cluster's region
   cluster  = google_container_cluster.cluster.name

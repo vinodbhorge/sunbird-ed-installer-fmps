@@ -90,14 +90,14 @@ variable "kubernetes_version" {
 variable "gke_node_pool_instance_type" {
   type        = string
   description = "GKE nodepool instance types."
-  default     = "n2d-standard-16"
+  default     = "e2-standard-8"
 }
 
 variable "gke_node_pool_scaling_config" {
   type        = map(number)
-  description = "EKS node group auto scaling configuration."
+  description = "GKE node pool auto scaling configuration."
   default     = {
-    desired_size = 2
+    desired_size = 4
   }
 }
 
