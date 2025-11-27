@@ -94,10 +94,10 @@ assessment:
   resources:
     requests:
       cpu: 100m
-      memory: 100M
+      memory: 150Mi
     limits:
       cpu: 1
-      memory: 1G
+      memory: 1.5Gi
       
 flink: &flink
   resources:
@@ -223,10 +223,10 @@ cassandra:
   resources:
     requests:
       cpu: 520m
-      memory: 6Gi
+      memory: 9Gi
     limits:
       cpu: 750m
-      memory: 12Gi 
+      memory: 18Gi 
 
 druid-raw-cluster:
   druid_indexer_persistent_volume_size: 50Gi 
@@ -342,10 +342,10 @@ kafka:
   resources:
     limits:
       cpu: 1
-      memory: 2048Mi
+      memory: 3Gi
     requests:
       cpu: 750m
-      memory: 1024Mi
+      memory: 1.5Gi
   persistence:
     size: 500Gi
   zookeeper:  
@@ -354,19 +354,19 @@ kafka:
     resources:
       limits:
         cpu: 256m
-        memory: 512Mi
+        memory: 768Mi
       requests:
         cpu: 100m
-        memory: 128Mi
+        memory: 192Mi
 
 neo4j:
   resources:
     requests:
       cpu: "0.5"
-      memory: "1Gi"
+      memory: "1.5Gi"
     limits:
       cpu: "1"
-      memory: "2Gi"
+      memory: "3Gi"
   neo4j:
     pvc:
       resources:
@@ -492,10 +492,10 @@ promtail:
   resources:
     limits:
       cpu: 200m
-      memory: 128Mi
+      memory: 192Mi
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 192Mi
 
 reloader:
   reloader:
